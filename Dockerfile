@@ -1,35 +1,36 @@
-# Stage 1: Build the JAR using Maven
-FROM maven:3.9.3-eclipse-temurin-11 AS build
+# Stage 1: Build the application using Java 21
+FROM maven:3.9.3-eclipse-temurin-21 AS build
 
 # Set working directory
 WORKDIR /app
 
-# Copy pom.xml and download dependencies first (cached)
+# Copy Maven configuration and download dependencies first
 COPY pom.xml .
 RUN mvn dependency:go-offline
 
-# Copy source code
+# Copy the source code
 COPY src ./src
 
-# Package the application
+# Build the application JAR (skip tests)
 RUN mvn clean package -DskipTests
 
-# Stage 2: Run the JAR using a lightweight JRE
-FROM eclipse-temurin:11-jre-jammy
+# Stage 2: Run the application using Java 21 JRE
+FROM eclipse-temurin:21-jre-jammy
 
+# Set working directory
 WORKDIR /app
 
-# Install curl for health check
+# Install curl for health checks
 RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
 
-# Copy the built JAR from the build stage
+# Copy the JAR from the build stage
 COPY --from=build /app/target/*.jar app.jar
 
-# Create non-root user
+# Create a non-root user
 RUN groupadd -r spring && useradd --no-log-init -r -g spring spring
 USER spring
 
-# Expose port
+# Expose application port
 EXPOSE 8080
 
 # Health check
