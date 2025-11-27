@@ -1,5 +1,5 @@
-# Use OpenJDK 11
-FROM openjdk:11-jre-slim
+# Use Eclipse Temurin JDK 11 (official OpenJDK builds)
+FROM eclipse-temurin:11-jre-jammy
 
 # Set working directory
 WORKDIR /app
@@ -11,7 +11,7 @@ RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
 COPY target/digital-wallet-1.0.0.jar app.jar
 
 # Create a non-root user to run the application
-RUN groupadd -r spring && useradd -r -g spring spring
+RUN groupadd -r spring && useradd --no-log-init -r -g spring spring
 USER spring
 
 # Expose port 8080
