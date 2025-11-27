@@ -1,10 +1,10 @@
 # Stage 1: Build the application using Java 21
-FROM maven:3.9.3-eclipse-temurin-21 AS build
+FROM maven:3.9.3-jdk-21 AS build
 
 # Set working directory
 WORKDIR /app
 
-# Copy Maven configuration and download dependencies first
+# Copy Maven configuration first to leverage caching
 COPY pom.xml .
 RUN mvn dependency:go-offline
 
@@ -20,7 +20,7 @@ FROM eclipse-temurin:21-jre-jammy
 # Set working directory
 WORKDIR /app
 
-# Install curl for health checks
+# Install curl for health check
 RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
 
 # Copy the JAR from the build stage
@@ -30,7 +30,7 @@ COPY --from=build /app/target/*.jar app.jar
 RUN groupadd -r spring && useradd --no-log-init -r -g spring spring
 USER spring
 
-# Expose application port
+# Expose port
 EXPOSE 8080
 
 # Health check
